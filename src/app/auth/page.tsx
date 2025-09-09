@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 import { supabase } from "@/shared/libs/supabaseClient";
+import toast from "react-hot-toast";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -30,14 +31,14 @@ export default function AuthForm() {
           email,
           password,
         });
-        if (error) throw error;
+        if (error) return toast.error(error.message || "Login Failed.");
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+        if (error) return toast.error(error.message || "Registration Failed.");
       }
       router.push("/dashboard");
     } catch (err: any) {
-      alert(err.message);
+      if (err) toast.error(err.message || "Failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -116,7 +117,11 @@ export default function AuthForm() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full cursor-pointer bg-accent hover:bg-accent/90 text-accent-foreground transition-all duration-300 hover:scale-105 hover:shadow-xl group px-8 py-3 rounded-lg font-semibold" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full cursor-pointer bg-accent hover:bg-accent/90 text-accent-foreground transition-all duration-300 hover:scale-105 hover:shadow-xl group px-8 py-3 rounded-lg font-semibold"
+                disabled={loading}
+              >
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
