@@ -2,7 +2,7 @@
 
 import BillCalendar from "@/components/calendar/CalendarView";
 import { getBills } from "@/services/bills.services";
-import { Bill } from "@/shared/types/bills";
+import { Bill, BillRow } from "@/shared/types/bills";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -18,14 +18,14 @@ export default function Page() {
         const data = await getBills();
 
         const mapped: Bill[] =
-          data?.map((b: any) => ({
+          data?.map((b: BillRow) => ({
             id: String(b.id),
             name: b.name,
             amount: b.amount,
             due_date: new Date(b.due_date),
             category: b.category,
             status: b.status,
-            company: b.company,
+            company: b.company ?? "",
           })) ?? [];
 
         setBills(mapped);

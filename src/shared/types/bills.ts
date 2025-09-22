@@ -1,3 +1,14 @@
+export type BillRow = {
+  id: string | number;
+  name: string;
+  amount: number;
+  due_date: string | Date;
+  category: string;
+  status: string;
+  company?: string;
+};
+
+
 export type Bill = {
   id?: string;
   user_id?: string;

@@ -281,7 +281,7 @@ export default function BillReminderLanding() {
                 </span>
               </div>
               <p className="text-muted-foreground">
-                The world's most trusted bill reminder and payment tracking
+                The world most trusted bill reminder and payment tracking
                 platform.
               </p>
             </div>

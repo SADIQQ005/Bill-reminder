@@ -44,7 +44,7 @@ export default function BillForm() {
             toast.error("Bill not found");
           }
         })
-        .catch((_err) => {
+        .catch(() => {
           toast.error("Failed to load bill");
         })
         .finally(() => setFetching(false));
