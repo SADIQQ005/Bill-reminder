@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/shared/libs/supabaseClient";
 import { addBill } from "@/services/bills.services";
+import toast from "react-hot-toast";
 
 export default function BillForm({ onSuccess }: { onSuccess: () => void }) {
-  const [title, setTitle] = useState("");
+  const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(new Date().toISOString().substring(0, 10));
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,19 +30,23 @@ export default function BillForm({ onSuccess }: { onSuccess: () => void }) {
 
     try {
       await addBill({
-        title,
+        name,
         amount: Number(amount),
-        due_date: dueDate,
+        due_date: new Date(dueDate),
         category,
         user_id: user.id,
       });
-      setTitle("");
+      setName("");
       setAmount("");
       setDueDate("");
       setCategory("");
       onSuccess();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -53,8 +58,8 @@ export default function BillForm({ onSuccess }: { onSuccess: () => void }) {
         <Label>Bill Title</Label>
         <Input
           placeholder="e.g. Electricity Bill"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
         />
       </div>

@@ -3,7 +3,7 @@ import { Bill } from "@/shared/types/bills";
 const BASE_URL = "/api/bills";
 
 // Add a bill
-export async function addBill(bill: any) {
+export async function addBill(bill: Bill) {
   const res = await fetch(`${BASE_URL}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

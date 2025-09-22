@@ -54,7 +54,10 @@ export async function GET() {
       monthlyAverage: monthlyAverage || 0,
       recentBills: bills.slice(0, 6),
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
   }
 }

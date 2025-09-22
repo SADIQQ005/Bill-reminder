@@ -29,8 +29,8 @@ export default function Page() {
           })) ?? [];
 
         setBills(mapped);
-      } catch (error: any) {
-        toast.error("Error fetching bills");
+      } catch (_err) {
+        toast.error("Failed to load bill");
       } finally {
         setLoading(false);
       }

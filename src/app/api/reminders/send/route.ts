@@ -15,7 +15,10 @@ export async function POST() {
     const { data: bills, error } = await supabase
       .from("bills")
       .select("*, users(email)")
-      .lte("due_date", new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString())
+      .lte(
+        "due_date",
+        new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+      )
       .gte("due_date", new Date().toISOString()) // not overdue
       .eq("reminder_enabled", true);
 
@@ -42,7 +45,10 @@ export async function POST() {
     }
 
     return NextResponse.json({ success: true, count: bills?.length ?? 0 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
   }
 }

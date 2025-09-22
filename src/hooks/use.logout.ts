@@ -15,8 +15,8 @@ export function useLogout() {
       } else {
         toast.error("Logout failed");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+    } catch (_err) {
+      toast.error("Something went wrong");
     }
   };
 

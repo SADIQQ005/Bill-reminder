@@ -29,13 +29,24 @@ export default function BillForm() {
       setFetching(true);
       getBillById(billId)
         .then(({ data }) => {
-          setForm({
-            ...data,
-            amount: data.amount.toString(),
-            due_date: data.due_date.slice(0, 10),
-          });
+          if (data) {
+            setForm({
+              ...form,
+              ...data,
+              amount:
+                typeof data.amount === "number" ? data.amount.toString() : "0",
+              due_date:
+                typeof data.due_date === "string"
+                  ? data.due_date.slice(0, 10)
+                  : "",
+            });
+          } else {
+            toast.error("Bill not found");
+          }
         })
-        .catch(() => toast.error("Failed to load bill"))
+        .catch((_err) => {
+          toast.error("Failed to load bill");
+        })
         .finally(() => setFetching(false));
     }
   }, [billId]);
@@ -52,23 +63,31 @@ export default function BillForm() {
 
     try {
       if (billId) {
+        // Update existing bill
         await updateBill(billId, {
           ...form,
           amount: parseFloat(form.amount),
+          due_date: new Date(form.due_date),
           reminder_days_before: parseInt(String(form.reminder_days_before), 10),
         });
       } else {
+
+        // Add new bill
         await addBill({
           ...form,
           amount: parseFloat(form.amount),
+          due_date: new Date(form.due_date),
           reminder_days_before: parseInt(String(form.reminder_days_before), 10),
         });
       }
+
       toast.success(
         billId
           ? "Bill updated successfully!"
           : "Bill with reminder added successfully!"
       );
+
+      // Reset form
       setForm({
         name: "",
         amount: "",
@@ -78,8 +97,12 @@ export default function BillForm() {
         frequency: "",
         reminder_days_before: 3,
       });
-    } catch (error) {
-      toast.error("Failed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

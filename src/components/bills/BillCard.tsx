@@ -70,7 +70,7 @@ export function BillCard({
           ? "Reminder enabled for this bill"
           : "Reminder disabled"
       );
-    } catch (err) {
+    } catch (_err) {
       toast.error("Failed to update reminder");
     } finally {
       setIsTogglingReminder(false);
@@ -83,7 +83,7 @@ export function BillCard({
     setIsMarkingPaid(true);
     try {
       await onMarkPaid(bill.id);
-    } catch (err) {
+    } catch (_err) {
     } finally {
       setIsMarkingPaid(false);
     }

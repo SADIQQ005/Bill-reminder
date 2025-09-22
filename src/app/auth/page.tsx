@@ -34,7 +34,7 @@ export default function AuthForm() {
         });
 
         if (res.redirected) {
-          router.push(res.url); 
+          router.push(res.url);
         } else {
           const { error } = await res.json();
           toast.error(error || "Login failed");
@@ -42,14 +42,19 @@ export default function AuthForm() {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) {
-          return toast.error(error.message || "Registration Failed. Verify your email to login");
+          return toast.error(
+            error.message || "Registration Failed. Verify your email to login"
+          );
         }
         router.refresh();
         toast.success("Registration successful. Verify your email to login");
-
       }
-    } catch (err: any) {
-      if (err) toast.error(err.message || "Failed. Please try again.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

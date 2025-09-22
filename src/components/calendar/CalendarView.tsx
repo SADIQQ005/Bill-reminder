@@ -141,7 +141,6 @@ export default function BillCalendar({ bills }: { bills?: Bill[] }) {
     
     // Add previous month's trailing days
     for (let i = firstDay - 1; i >= 0; i--) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, prevMonthDays - i);
       days.push(
         <div key={`prev-${prevMonthDays - i}`} className="p-2 h-24 border border-gray-100 bg-gray-50 text-gray-400">
           <div className="text-sm">{prevMonthDays - i}</div>

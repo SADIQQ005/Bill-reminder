@@ -42,7 +42,7 @@ export default function Page() {
         const data = await getBills();
 
         const mapped: Bill[] =
-          data?.map((b: any) => ({
+          data?.map((b: Bill) => ({
             id: String(b.id),
             name: b.name,
             amount: b.amount,
@@ -50,10 +50,11 @@ export default function Page() {
             category: b.category,
             status: b.status,
             company: b.company,
+            reminder_enabled: b.reminder_enabled,
           })) ?? [];
 
         setBills(mapped);
-      } catch (error: any) {
+      } catch {
         toast.error("Error fetching bills");
       } finally {
         setLoading(false);
@@ -74,7 +75,7 @@ export default function Page() {
 
       await markBillAsPaid(id);
       toast.success("Bill marked as paid");
-    } catch (err) {
+    } catch {
       // Rollback if failed
       setBills((prev) =>
         prev.map((bill) =>
@@ -88,7 +89,9 @@ export default function Page() {
   const handleToggleReminder = async (billId: string, enabled: boolean) => {
     try {
       await toggleBillReminder(billId, enabled);
-    } catch (err) {}
+    } catch {
+      toast.error("Failed to toggle reminder");
+    }
   };
 
   return (
@@ -112,7 +115,7 @@ export default function Page() {
           <div className="flex flex-col items-center justify-center py-10">
             <Receipt className="h-16 w-16 text-muted-foreground" />
             <p className="mt-4 text-center text-lg text-muted-foreground">
-              You haven't added any bills yet.
+              You haven&apos;t added any bills yet.
             </p>
           </div>
         ) : (

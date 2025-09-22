@@ -48,7 +48,8 @@ export default function Dashboard() {
             })
           ),
         });
-      } catch (err) {
+      } catch (_err) {
+        toast.error("Failed to load dashboard stats");
       } finally {
         setLoading(false);
       }
@@ -72,7 +73,7 @@ export default function Dashboard() {
 
       await markBillAsPaid(id);
       toast.success("Bill marked as paid");
-    } catch (err) {
+    } catch (_err) {
       // Rollback to original status if failed
       setStats((prev) => {
         if (!prev) return prev;
