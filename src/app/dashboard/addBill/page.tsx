@@ -24,32 +24,28 @@ export default function BillForm() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
 
-  useEffect(() => {
-    if (billId) {
-      setFetching(true);
-      getBillById(billId)
-        .then(({ data }) => {
-          if (data) {
-            setForm({
-              ...form,
-              ...data,
-              amount:
-                typeof data.amount === "number" ? data.amount.toString() : "0",
-              due_date:
-                typeof data.due_date === "string"
-                  ? data.due_date.slice(0, 10)
-                  : "",
-            });
-          } else {
-            toast.error("Bill not found");
-          }
-        })
-        .catch(() => {
-          toast.error("Failed to load bill");
-        })
-        .finally(() => setFetching(false));
-    }
-  }, [billId]);
+ useEffect(() => {
+  if (billId) {
+    setFetching(true);
+    getBillById(billId)
+      .then(({ data }) => {
+        if (data) {
+          setForm(prevForm => ({
+            ...prevForm,
+            ...data,
+            amount: data.amount.toString(), 
+            due_date: data.due_date.slice(0, 10), 
+          }));
+        } else {
+          toast.error("Bill not found");
+        }
+      })
+      .catch(() => {
+        toast.error("Failed to load bill");
+      })
+      .finally(() => setFetching(false));
+  }
+}, [billId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
 import { useRouter } from "next/navigation";
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -40,7 +38,8 @@ export default function AuthForm() {
           toast.error(error || "Login failed");
         }
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        // Call supabase() as a function to get the client
+        const { error } = await supabase().auth.signUp({ email, password });
         if (error) {
           return toast.error(
             error.message || "Registration Failed. Verify your email to login"

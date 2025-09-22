@@ -1,4 +1,4 @@
-import { Bill } from "@/shared/types/bills";
+import { ApiResponse, Bill, BillApiResponse } from "@/shared/types/bills";
 
 const BASE_URL = "/api/bills";
 
@@ -32,11 +32,11 @@ export async function getDashboardStats() {
   return data;
 }
 
-export async function getBillById(id: string): Promise<Bill> {
+export async function getBillById(id: string): Promise<ApiResponse<BillApiResponse>> {
   const res = await fetch(`${BASE_URL}/${id}`);
   if (!res.ok) throw new Error("Failed to fetch bill");
-  const { data } = await res.json();
-  return data;
+  const response = await res.json();
+  return response; 
 }
 
 export async function updateBill(

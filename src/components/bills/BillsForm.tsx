@@ -21,7 +21,7 @@ export default function BillForm({ onSuccess }: { onSuccess: () => void }) {
 
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await supabase().auth.getUser();
     if (!user) {
       alert("You must be logged in.");
       setLoading(false);

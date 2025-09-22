@@ -20,13 +20,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
+      const { data } = await supabase().auth.getSession();
       setUser(data.session?.user ?? null);
       setLoading(false);
     };
     getSession();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
+    const { data: listener } = supabase().auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
