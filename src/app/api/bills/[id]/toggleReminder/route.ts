@@ -1,20 +1,22 @@
-// /app/api/bills/[id]/toggleReminder/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const supabase = createRouteHandlerClient({ cookies });
   const { reminder_enabled } = await req.json();
+  
+  // Await the params since it's now a Promise
+  const params = await context.params;
+  const { id } = params;
 
   const { data, error } = await supabase
     .from("bills")
     .update({ reminder_enabled })
-    .eq("id", context.params.id)
+    .eq("id", id)
     .select();
 
   if (error) {
@@ -23,4 +25,3 @@ export async function PATCH(
 
   return NextResponse.json({ success: true, data });
 }
-
