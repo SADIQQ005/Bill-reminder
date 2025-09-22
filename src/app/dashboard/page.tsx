@@ -1,81 +1,106 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { BillCard, Bill } from "@/components/bills/BillCard";
+import { BillCard } from "@/components/bills/BillCard";
 import { Button } from "@/components/ui/button";
-import { 
-  Receipt, 
-  DollarSign, 
-  Calendar, 
+import {
+  Receipt,
+  DollarSign,
+  Calendar,
   TrendingUp,
   Plus,
-  Bell
+  Bell,
 } from "lucide-react";
-import { addDays, subDays } from "date-fns";
-
-// Mock data for demonstration
-const mockBills: Bill[] = [
-  {
-    id: "1",
-    name: "Netflix Subscription",
-    amount: 15.99,
-    dueDate: addDays(new Date(), 3),
-    category: "Entertainment",
-    status: "pending",
-    company: "Netflix Inc."
-  },
-  {
-    id: "2",
-    name: "Electric Bill",
-    amount: 89.42,
-    dueDate: addDays(new Date(), 7),
-    category: "Utilities",
-    status: "pending",
-    company: "City Power & Light"
-  },
-  {
-    id: "3",
-    name: "Internet Service",
-    amount: 79.99,
-    dueDate: subDays(new Date(), 2),
-    category: "Utilities",
-    status: "overdue",
-    company: "FiberNet"
-  },
-  {
-    id: "4",
-    name: "Car Insurance",
-    amount: 142.50,
-    dueDate: subDays(new Date(), 5),
-    category: "Insurance",
-    status: "paid",
-    company: "SafeDrive Insurance"
-  }
-];
+import { getDashboardStats, markBillAsPaid } from "@/services/bills.services";
+import { DashboardSkeleton } from "@/components/dashboard/DashbaordSkeletonLoading";
+import { EmptyState } from "@/components/dashboard/DashboardEmpty";
+import { Bill } from "@/shared/types/bills";
+import { formatCurrency } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 export default function Dashboard() {
-  const upcomingBills = mockBills.filter(bill => 
-    bill.status === "pending" || bill.status === "overdue"
-  );
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<{
+    totalUpcoming: number;
+    upcomingCount: number;
+    overdueCount: number;
+    monthlyAverage: number;
+    recentBills: Bill[];
+  } | null>(null);
 
-  const totalUpcoming = upcomingBills.reduce((sum, bill) => sum + bill.amount, 0);
-  const overdueBills = mockBills.filter(bill => bill.status === "overdue");
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
 
-  const handleMarkPaid = (id: string) => {
-    // TODO: Implement mark as paid functionality
-    console.log("Marking bill as paid:", id);
+      try {
+        const dashboardStats = await getDashboardStats();
+        setStats({
+          totalUpcoming: dashboardStats.totalUpcoming,
+          upcomingCount: dashboardStats.upcomingCount,
+          overdueCount: dashboardStats.overdueCount,
+          monthlyAverage: dashboardStats.monthlyAverage,
+          recentBills: dashboardStats.recentBills.map(
+            (bill: { due_date: string }) => ({
+              ...bill,
+              dueDate: new Date(bill.due_date),
+            })
+          ),
+        });
+      } catch (err) {
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleMarkPaid = async (id: string) => {
+    try {
+      // Optimistic update
+      setStats((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          recentBills: prev.recentBills.map((bill) =>
+            bill.id === id ? { ...bill, status: "paid" } : bill
+          ),
+        };
+      });
+
+      await markBillAsPaid(id);
+      toast.success("Bill marked as paid");
+    } catch (err) {
+      // Rollback to original status if failed
+      setStats((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          recentBills: prev.recentBills.map((bill) =>
+            bill.id === id ? { ...bill, status: "pending" } : bill
+          ),
+        };
+      });
+
+      toast.error("Failed to mark bill as paid");
+    }
   };
+  if (loading) return <DashboardSkeleton />;
 
-  const handleEditBill = (id: string) => {
-    // TODO: Implement edit bill functionality
-    console.log("Editing bill:", id);
-  };
+  if (!stats || stats.recentBills.length === 0) {
+    return (
+      <div>
+        <EmptyState message="No bills found. Add a bill to get started!" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="border-b border-border bg-background/95 backdrop-blur">
         <div className="flex h-16 items-center justify-between px-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
@@ -96,34 +121,32 @@ export default function Dashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             title="Total Upcoming"
-            value={`$${totalUpcoming.toFixed(2)}`}
+            value={formatCurrency(stats.totalUpcoming)}
             subtitle="This month"
             icon={DollarSign}
-            trend={{ value: "12% from last month", isPositive: false }}
           />
           <StatsCard
             title="Bills Due Soon"
-            value={upcomingBills.length.toString()}
+            value={stats.upcomingCount.toString()}
             subtitle="Next 7 days"
             icon={Calendar}
           />
           <StatsCard
             title="Overdue Bills"
-            value={overdueBills.length.toString()}
+            value={stats.overdueCount.toString()}
             subtitle="Needs attention"
             icon={Bell}
           />
           <StatsCard
             title="Monthly Average"
-            value="$387.50"
+            value={`₦${stats.monthlyAverage.toFixed(2)}`}
             subtitle="Last 3 months"
             icon={TrendingUp}
-            trend={{ value: "8% decrease", isPositive: true }}
           />
         </div>
 
         {/* Recent Bills */}
-        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+        <Card className="rounded-[0px]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Receipt className="h-5 w-5 text-primary" />
@@ -131,16 +154,22 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {mockBills.slice(0, 6).map((bill) => (
-                <BillCard
-                  key={bill.id}
-                  bill={bill}
-                  onMarkPaid={handleMarkPaid}
-                  onEdit={handleEditBill}
-                />
-              ))}
-            </div>
+            {stats.recentBills.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {stats.recentBills.map((bill) => (
+                  <BillCard
+                    key={bill.id}
+                    bill={bill}
+                    edit={false}
+                    mark={true}
+                    toggle={false}
+                    onMarkPaid={handleMarkPaid}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState message="No recent bills yet." />
+            )}
           </CardContent>
         </Card>
       </div>

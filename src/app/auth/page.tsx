@@ -27,16 +27,27 @@ export default function AuthForm() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
         });
-        if (error) return toast.error(error.message || "Login Failed.");
+
+        if (res.redirected) {
+          router.push(res.url); 
+        } else {
+          const { error } = await res.json();
+          toast.error(error || "Login failed");
+        }
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
-        if (error) return toast.error(error.message || "Registration Failed.");
+        if (error) {
+          return toast.error(error.message || "Registration Failed. Verify your email to login");
+        }
+        router.refresh();
+        toast.success("Registration successful. Verify your email to login");
+
       }
-      router.push("/dashboard");
     } catch (err: any) {
       if (err) toast.error(err.message || "Failed. Please try again.");
     } finally {
