@@ -64,7 +64,7 @@ export function BillCard({
 
     setIsTogglingReminder(true);
     try {
-      await onToggleReminder(bill.id, !bill.reminder_enabled);
+      if (bill.id) await onToggleReminder(bill.id, !bill.reminder_enabled);
       toast.success(
         !bill.reminder_enabled
           ? "Reminder enabled for this bill"
@@ -82,7 +82,7 @@ export function BillCard({
 
     setIsMarkingPaid(true);
     try {
-      await onMarkPaid(bill.id);
+      if (bill.id) await onMarkPaid(bill.id);
     } catch (_err) {
     } finally {
       setIsMarkingPaid(false);
