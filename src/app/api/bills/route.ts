@@ -77,38 +77,3 @@ export async function GET() {
     return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
   }
 }
-
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const supabase = createRouteHandlerClient({ cookies: () => cookies() });
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const updates = await req.json();
-
-    const { data, error } = await supabase
-      .from("bills")
-      .update({ ...updates })
-      .eq("id", params.id)
-      .eq("user_id", user.id)
-      .select();
-
-    if (error)
-      return NextResponse.json({ error: error.message }, { status: 400 });
-
-    return NextResponse.json({ success: true, data });
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
-  }
-}
